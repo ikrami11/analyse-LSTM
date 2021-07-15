@@ -203,7 +203,7 @@ import keras
 pip install tensorflow
 
 
-# In[ ]:
+# 
 
 
 model = keras.Sequential()
@@ -220,7 +220,7 @@ model.add(keras.layers.Dense(units=1))
 model.compile(loss='mean_squared_error', optimizer='adam')
 
 
-# In[ ]:
+# 
 
 
 history = model.fit(
@@ -232,13 +232,13 @@ history = model.fit(
 )
 
 
-# In[ ]:
+# 
 
 
 f_columns = ['id', 'room_id/id', 'temp', 'out/in']
 
 
-# In[ ]:
+# 
 
 
 f_transformer = RobustScaler()
@@ -251,7 +251,7 @@ test.loc[:, f_columns] = f_transformer.transform(
 )
 
 
-# In[ ]:
+#
 
 
 temp_transformer = RobustScaler()
