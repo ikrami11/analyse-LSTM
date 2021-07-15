@@ -1,15 +1,21 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-#  TP LSTM
+# In[7]:
 
-# In[2]:
+
+from google.colab import drive  
+drive.mount('/content/drive')
+
+
+# In[6]:
 
 
 get_ipython().system('pip install pyspark')
 
 
-# In[3]:
+# In[8]:
+
 
 
 import os
@@ -31,14 +37,12 @@ from pyspark.ml.feature import VectorAssembler, StandardScaler
 from pyspark.ml.evaluation import RegressionEvaluator
 
 
-# In[4]:
 
 
 import seaborn as sns
 import matplotlib.pyplot as plt
 
 
-# In[5]:
 
 
 from IPython.core.interactiveshell import InteractiveShell
@@ -55,7 +59,6 @@ get_ipython().run_line_magic('matplotlib', 'inline')
 get_ipython().run_line_magic('config', "InlineBackend.figure_format = 'retina'")
 
 
-# In[6]:
 
 
 rnd_seed=23
@@ -63,74 +66,69 @@ np.random.seed=rnd_seed
 np.random.set_state=rnd_seed
 
 
-# In[7]:
 
 
 spark = SparkSession.builder.master("local[2]").appName("tp").getOrCreate()
 
 
-# In[8]:
 
 
 spark
 
 
-# In[9]:
 
 
 sc = spark.sparkContext
 sc
 
 
-# In[10]:
 
 
 sqlContext = SQLContext(spark.sparkContext)
 sqlContext
 
 
-# In[11]:
 
 
-HOUSING_DATA = '../IOT-temp.csv'
+HOUSING_DATA = '/content/drive/MyDrive/IOT-temp.csv'
 
 
-# In[13]:
 
 
-data = spark.read.csv("../IOT-temp.csv", header=True, inferSchema=True)
+data = spark.read.csv("/content/drive/MyDrive/IOT-temp.csv", header=True, inferSchema=True)
 data.printSchema()
-
-
-# In[14]:
-
-
 data.show()
 
 
-# In[26]:
+# In[10]:
+
+
+
+
 
 
 df = pd.read_csv(
-  "../IOT-temp.csv",
+  '/content/drive/MyDrive/IOT-temp.csv',
   parse_dates=['noted_date'],
   index_col="noted_date"
 )
 
 
-# In[27]:
+# In[11]:
 
 
 df.shape
 
 
-# In[28]:
+# In[12]:
 
 
 df.head()
 
 
-# In[29]:
+# In[13]:
+
+
 
 
 df['hour'] = df.index.hour
@@ -139,7 +137,6 @@ df['day_of_week'] = df.index.dayofweek
 df['month'] = df.index.month
 
 
-# In[30]:
 
 
 train_size = int(len(df) * 0.9) 
@@ -148,13 +145,13 @@ train, test = df.iloc[0:train_size], df.iloc[train_size:len(df)]
 print(len(train), len(test))
 
 
-# In[31]:
+# In[14]:
+
 
 
 f_columns = ['id', 'room_id/id', 'temp', 'out/in']
 
 
-# In[34]:
 
 
 def create_dataset(X, y, noted_date=1):
@@ -166,46 +163,26 @@ def create_dataset(X, y, noted_date=1):
     return np.array(Xs), np.array(ys)
 
 
-# In[35]:
 
 
 noted_date = 10
 
 
-# In[36]:
 
 
 X_train, y_train = create_dataset(train, train.temp, noted_date)
 X_test, y_test = create_dataset(test, test.temp, noted_date)
 
 
-# In[38]:
 
 
 print(X_train.shape, y_train.shape)
 
 
-# In[41]:
-
-
-pip install keras
-
-
-# In[45]:
+# In[15]:
 
 
 import keras
-
-
-# In[44]:
-
-
-pip install tensorflow
-
-
-# 
-
-
 model = keras.Sequential()
 model.add(
   keras.layers.Bidirectional(
@@ -220,27 +197,24 @@ model.add(keras.layers.Dense(units=1))
 model.compile(loss='mean_squared_error', optimizer='adam')
 
 
-# 
+# In[21]:
+
+
+from sklearn.preprocessing import RobustScaler
+
+
+# In[ ]:
 
 
 history = model.fit(
-    X_train, y_train,
-    epochs=30,
-    batch_size=32,
-    validation_split=0.1,
-    shuffle=False
-)
+    X_train, y_train
+   )
 
 
-# 
+# In[ ]:
 
 
 f_columns = ['id', 'room_id/id', 'temp', 'out/in']
-
-
-# 
-
-
 f_transformer = RobustScaler()
 f_transformer = f_transformer.fit(train[f_columns].to_numpy())
 train.loc[:, f_columns] = f_transformer.transform(
@@ -249,10 +223,6 @@ train.loc[:, f_columns] = f_transformer.transform(
 test.loc[:, f_columns] = f_transformer.transform(
   test[f_columns].to_numpy()
 )
-
-
-#
-
 
 temp_transformer = RobustScaler()
 temp_transformer = tmp_transformer.fit(train[['temp']])
